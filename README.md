@@ -58,6 +58,7 @@ python -m pytest -q
 - `Python 3.10+`
 - `tkinter` (incluído no Python)
 - `pytest` (desenvolvimento)
+- `tkcalendar` 
 
 ## Autor
 
