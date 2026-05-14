@@ -4,6 +4,7 @@
     "ml": 2.0,
     "lado": "esquerdo",
     "ciclo_dias": 21,
+    "proxima_data": "",
     "notas": "Com dor"
   },
   {
@@ -11,6 +12,7 @@
     "ml": 2.0,
     "lado": "esquerdo",
     "ciclo_dias": 21,
+    "proxima_data": "",
     "notas": ""
   }
 ]

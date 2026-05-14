@@ -1,21 +1,32 @@
 from datetime import datetime, timedelta
 from aplicacao_dto import AplicacaoDTO
 from aplicacao_repository import AplicacaoRepository
+import config_repository
 
 class AplicacaoService:
     def __init__(self, repositorio=None):
+        self.config_repo = config_repository.ConfigRepository()
         self.repositorio = repositorio if repositorio is not None else AplicacaoRepository()
-    
-    def registrar(self, data: str, ml: float, lado: str, ciclo_dias: int, notas: str = ""):
+        self.ciclo_padrao = self.config_repo.get_ciclo_padrao()
+
+    def registrar(self, data: str, ml: float, lado: str, notas: str = ""):
         if ml <= 0:
             raise ValueError("Dosagem deve ser maior que zero")
-        if ciclo_dias <= 0:
-            raise ValueError("Ciclo deve ser maior que zero")
         
-        app = AplicacaoDTO(data=data, ml=ml, lado=lado, ciclo_dias=ciclo_dias, notas=notas)
+        # Calcula a próxima data usando o ciclo padrão
+        proxima_data = self.calcular_proxima_data(data, self.ciclo_padrao)
+        
+        app = AplicacaoDTO(
+            data=data,
+            ml=ml,
+            lado=lado,
+            ciclo_dias=self.ciclo_padrao,
+            proxima_data=proxima_data,  # ← NOVO
+            notas=notas
+        )
         self.repositorio.adicionar(app)
         return app
-    
+
     def calcular_proxima_data(self, data_str: str, ciclo_dias: int) -> str:
         data = datetime.strptime(data_str, "%d/%m/%Y")
         proxima = data + timedelta(days=ciclo_dias)

@@ -40,27 +40,78 @@ class GoogleAuth:
         self.service = build('calendar', 'v3', credentials=self.creds)
         return self.service
     
+    def esta_logado(self):
+        """Verifica se existe token salvo (usuário já autenticou antes)"""
+        if os.path.exists(self.token_arquivo):
+            return True
+        return False
+    
     def criar_evento(self, titulo, data_inicio, data_fim, descricao=""):
-        """Cria um evento no Google Calendar"""
+        """Cria um evento de dia inteiro no Google Calendar"""
         if not self.service:
             self.autenticar()
-        
+    
         evento = {
             'summary': titulo,
             'description': descricao,
             'start': {
-                'dateTime': data_inicio,
-                'timeZone': 'America/Sao_Paulo',
+                'date': data_inicio,
             },
             'end': {
-                'dateTime': data_fim,
-                'timeZone': 'America/Sao_Paulo',
+                'date': data_fim,
             },
         }
-        
+    
         evento_criado = self.service.events().insert(calendarId='primary', body=evento).execute()
-        print(f"   📅 Evento criado: {evento_criado.get('htmlLink')}")
-        return evento_criado.get('htmlLink')
+        print(f"   📅 Evento de dia inteiro criado: {evento_criado.get('htmlLink')}")
+        return evento_criado.get('id')
+    
+    def deletar_evento(self, event_id):
+        if not self.service:
+            self.autenticar()
+    
+        try:
+            self.service.events().delete(
+            calendarId='primary',
+            eventId=event_id
+        ).execute()
+            return True
+        except Exception as e:
+            print(f"Erro ao deletar evento: {e}")
+        return False
+    
+    def atualizar_evento(self, event_id, nova_data_inicio, nova_data_fim, titulo=None, descricao=None):
+        if not self.service:
+            self.autenticar()
+    
+        try:
+            # Busca o evento existente
+            evento = self.service.events().get(
+                calendarId='primary',
+                eventId=event_id
+            ).execute()
+            
+            # Atualiza os campos
+            evento['start']['dateTime'] = nova_data_inicio
+            evento['end']['dateTime'] = nova_data_fim
+            
+            if titulo:
+                evento['summary'] = titulo
+            if descricao:
+                evento['description'] = descricao
+            
+            # Envia a atualização
+            evento_atualizado = self.service.events().update(
+                calendarId='primary',
+                eventId=event_id,
+                body=evento
+            ).execute()
+            
+            return evento_atualizado
+                
+        except Exception as e:
+            print(f"Erro ao atualizar evento: {e}")
+        return None
     
     def fazer_login(self):
         """Método principal para login"""

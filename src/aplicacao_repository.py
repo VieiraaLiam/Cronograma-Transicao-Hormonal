@@ -3,7 +3,7 @@ import os
 from aplicacao_dto import AplicacaoDTO
 
 class AplicacaoRepository:
-    def __init__(self, caminho_arquivo: str = "data/aplicacoes.json"):
+    def __init__(self, caminho_arquivo="data/aplicacoes.json"):
         self.caminho = caminho_arquivo
         self._garantir_pasta()
     
@@ -37,3 +37,32 @@ class AplicacaoRepository:
         todas = self.carregar_todas()
         todas.append(aplicacao)
         return self.salvar_todas(todas)
+    
+    def remover(self, aplicacao):
+        """Remove uma aplicação específica da lista"""
+        todas = self.carregar_todas()
+        for i, app in enumerate(todas):
+            if (app.data == aplicacao.data and 
+                app.ml == aplicacao.ml and 
+                app.lado == aplicacao.lado):
+                del todas[i]
+                return self.salvar_todas(todas)
+        return False
+    
+    def atualizar(self, aplicacao_atualizada):  # ← NOVO MÉTODO
+        """Substitui uma aplicação existente pela versão atualizada"""
+        todas = self.carregar_todas()
+        encontrou = False
+        
+        for i, app in enumerate(todas):
+            # Identifica a aplicação única por data, dosagem e lado
+            if (app.data == aplicacao_atualizada.data and 
+                app.ml == aplicacao_atualizada.ml and 
+                app.lado == aplicacao_atualizada.lado):
+                todas[i] = aplicacao_atualizada
+                encontrou = True
+                break
+        
+        if encontrou:
+            return self.salvar_todas(todas)
+        return False
